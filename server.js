@@ -2,6 +2,7 @@ const express = require("express");
 
 const app = express();
 app.use(express.json());
+app.use(express.static("public"));
 
 // Notes live in memory for now, so they reset when the server restarts.
 let notes = [];
