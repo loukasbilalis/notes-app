@@ -1,5 +1,6 @@
 const path = require("path");
 const express = require("express");
+const store = require("./store");
 
 const app = express();
 app.use(express.json());
@@ -10,32 +11,24 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Notes live in memory for now, so they reset when the server restarts.
-let notes = [];
-let nextId = 1;
-
 // GET /api/notes - list all notes
-app.get("/api/notes", (req, res) => {
-  res.json(notes);
+app.get("/api/notes", async (req, res) => {
+  res.json(await store.list());
 });
 
 // POST /api/notes - create a note from { "text": "..." }
-app.post("/api/notes", (req, res) => {
+app.post("/api/notes", async (req, res) => {
   const text = (req.body.text || "").trim();
   if (!text) {
     return res.status(400).json({ error: "text is required" });
   }
-  const note = { id: nextId++, text };
-  notes.push(note);
-  res.status(201).json(note);
+  res.status(201).json(await store.create(text));
 });
 
 // DELETE /api/notes/:id - delete one note
-app.delete("/api/notes/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const before = notes.length;
-  notes = notes.filter((n) => n.id !== id);
-  if (notes.length === before) {
+app.delete("/api/notes/:id", async (req, res) => {
+  const removed = await store.remove(Number(req.params.id));
+  if (!removed) {
     return res.status(404).json({ error: "note not found" });
   }
   res.status(204).end();
