@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notes</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    input { flex: 1; padding: .5rem; }
+    button { padding: .5rem .75rem; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0; border-bottom: 1px solid #ddd; }
+    #error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Notes</h1>
+  <form id="form">
+    <input id="text" placeholder="Write a note" autocomplete="off" required>
+    <button>Add</button>
+  </form>
+  <p id="error"></p>
+  <ul id="list"></ul>
+
+  <script>
+    const list = document.getElementById("list");
+    const error = document.getElementById("error");
+
+    async function load() {
+      const res = await fetch("/api/notes");
+      const notes = await res.json();
+      list.innerHTML = "";
+      for (const note of notes) {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = note.text; // textContent, not innerHTML, so notes can't inject HTML
+        const del = document.createElement("button");
+        del.textContent = "Delete";
+        del.onclick = async () => {
+          await fetch(`/api/notes/${note.id}`, { method: "DELETE" });
+          load();
+        };
+        li.append(span, del);
+        list.append(li);
+      }
+    }
+
+    document.getElementById("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("text");
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: input.value }),
+      });
+      error.textContent = res.ok ? "" : "Could not add the note.";
+      input.value = "";
+      load();
+    };
+
+    load();
+  </script>
+</body>
+</html>
