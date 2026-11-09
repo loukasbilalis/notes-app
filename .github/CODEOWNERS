@@ -1,0 +1,7 @@
+# Each line is a file pattern followed by the people or teams who own it.
+# Owners are automatically requested as reviewers on PRs that touch those files.
+# The last matching pattern wins.
+
+*                   @loukasbilalis
+.github/            @loukasbilalis
+store.js            @loukasbilalis
