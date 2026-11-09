@@ -6,8 +6,9 @@ function memoryStore() {
   let notes = [];
   let nextId = 1;
   return {
-    async list() {
-      return notes;
+    async list(q = "") {
+      const needle = q.toLowerCase();
+      return notes.filter((n) => n.text.toLowerCase().includes(needle));
     },
     async create(text) {
       const note = { id: nextId++, text };
@@ -32,9 +33,14 @@ function postgresStore(connectionString) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
   return {
-    async list() {
+    async list(q = "") {
       await ready;
-      const { rows } = await pool.query("SELECT id, text FROM notes ORDER BY id");
+      // Escape LIKE wildcards so a search for "50%" matches the literal text.
+      const pattern = `%${q.replace(/[\\%_]/g, "\\$&")}%`;
+      const { rows } = await pool.query(
+        "SELECT id, text FROM notes WHERE text ILIKE $1 ORDER BY id",
+        [pattern]
+      );
       return rows;
     },
     async create(text) {

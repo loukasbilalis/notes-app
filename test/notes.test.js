@@ -54,3 +54,17 @@ test("DELETE /api/notes/:id returns 404 for an unknown note", async () => {
   const res = await fetch(`${base}/api/notes/99999`, { method: "DELETE" });
   assert.strictEqual(res.status, 404);
 });
+
+test("GET /api/notes?q= filters notes, ignoring case", async () => {
+  await post("Buy Oranges");
+  await post("call the bank");
+  const res = await fetch(`${base}/api/notes?q=oRANGE`);
+  const notes = await res.json();
+  assert.ok(notes.length >= 1);
+  assert.ok(notes.every((n) => n.text.toLowerCase().includes("orange")));
+});
+
+test("GET /api/notes?q= returns an empty list when nothing matches", async () => {
+  const res = await fetch(`${base}/api/notes?q=zzz-no-such-note`);
+  assert.deepStrictEqual(await res.json(), []);
+});
