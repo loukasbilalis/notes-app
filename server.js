@@ -20,7 +20,7 @@ app.post("/api/notes", (req, res) => {
   }
   const note = { id: nextId++, text };
   notes.push(note);
-  res.status(201).json(note);
+  res.status(200).json(note);
 });
 
 // DELETE /api/notes/:id - delete one note
