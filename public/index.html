@@ -8,6 +8,7 @@
     body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
     form { display: flex; gap: .5rem; margin-bottom: 1rem; }
     input { flex: 1; padding: .5rem; }
+    #search { width: 100%; box-sizing: border-box; margin-bottom: .5rem; }
     button { padding: .5rem .75rem; cursor: pointer; }
     ul { list-style: none; padding: 0; }
     li { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0; border-bottom: 1px solid #ddd; }
@@ -20,6 +21,7 @@
     <input id="text" placeholder="Write a note" autocomplete="off" required>
     <button>Add</button>
   </form>
+  <input id="search" type="search" placeholder="Search notes" autocomplete="off">
   <p id="error"></p>
   <ul id="list"></ul>
 
@@ -28,7 +30,8 @@
     const error = document.getElementById("error");
 
     async function load() {
-      const res = await fetch("/api/notes");
+      const q = document.getElementById("search").value;
+      const res = await fetch("/api/notes?q=" + encodeURIComponent(q));
       const notes = await res.json();
       list.innerHTML = "";
       for (const note of notes) {
@@ -58,6 +61,8 @@
       input.value = "";
       load();
     };
+
+    document.getElementById("search").oninput = load;
 
     load();
   </script>

@@ -11,9 +11,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// GET /api/notes - list all notes
+// GET /api/notes - list notes; ?q=term keeps only notes containing the term
 app.get("/api/notes", async (req, res) => {
-  res.json(await store.list());
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  res.json(await store.list(q));
 });
 
 // POST /api/notes - create a note from { "text": "..." }
